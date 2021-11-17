@@ -1,34 +1,45 @@
-from dataclasses import dataclass
-from typing import Dict, Iterable
-
-
-@dataclass
 class Note:
-    id: int
-    author: str
-    message: str
+    def __init__(self, note_id: int, author: str, message: str):
+        self.__data = {
+            'id': note_id,
+            'author': author,
+            'message': message,
+        }
+
+    @property
+    def id(self) -> int:
+        return self.__data['id']
+
+    @property
+    def message(self) -> str:
+        return self.__data['message']
+
+    @message.setter
+    def message(self, message: str):
+        self.__data['message'] = message
+
+    @staticmethod
+    def get_all_notes():
+        return GLOBAL_NOTES.values()
+
+    @staticmethod
+    def add_note(note):
+        GLOBAL_NOTES[note.id] = note
+
+    @staticmethod
+    def remove_note(note_id):
+        del GLOBAL_NOTES[note_id]
 
 
-GLOBAL_NOTES: Dict[int, Note] = {}
-
-
-def get_all_notes() -> Iterable[Note]:
-    return GLOBAL_NOTES.values()
-
-
-def add_note(note: Note):
-    GLOBAL_NOTES[note.id] = note
-
-
-def remove_note(note_id: int):
-    del GLOBAL_NOTES[note_id]
+GLOBAL_NOTES = {}
 
 
 if __name__ == '__main__':
-    add_note(Note(0, 'user_1', 'note_1'))
-    add_note(Note(1, 'user_1', 'note_2'))
+    Note.add_note(Note(0, 'user_1', 'note_1'))
+    Note.add_note(Note(1, 'user_1', 'note_2'))
 
-    print(get_all_notes())
+    note = Note(2, 'user_2', '**')
+    print(Note.get_all_notes())
 
-    remove_note(0)
-    print(get_all_notes())
+    Note.remove_note(0)
+    print(Note.get_all_notes())
