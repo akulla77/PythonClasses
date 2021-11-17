@@ -6,6 +6,9 @@ class Note:
             'message': message,
         }
 
+    def __repr__(self) -> str:
+        return f'Note(id={self.id}, author={self.__data["author"]}, message={self.message})'
+
     @property
     def id(self) -> int:
         return self.__data['id']
