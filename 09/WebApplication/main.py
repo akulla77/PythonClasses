@@ -21,7 +21,7 @@ async def __to_list(iterable: AsyncIterable[Any]) -> Iterable[Any]:
 
 
 @routes.get('/')
-async def root(_) -> web.Response:
+async def root(_request: web.Request) -> web.Response:
     raise web.HTTPFound(location='/notes')
 
 
@@ -29,7 +29,11 @@ async def root(_) -> web.Response:
 @aiohttp_jinja2.template('notes.jinja2')
 async def get_notes(request: web.Request) -> Dict[str, Any]:
     storage: AbstractStorage = request.app['storage']
-    return {'notes': await __to_list(storage.get_all())}
+
+    return {
+        'name': 'Notes Manager',
+        'notes': await __to_list(storage.get_all())
+    }
 
 
 @routes.post('/notes')
@@ -43,7 +47,7 @@ async def add_object(request: web.Request) -> web.Response:
     return web.HTTPFound(location=f'/notes')
 
 
-@routes.get('/api/notes')
+@routes.get('/api/notes', allow_head=False)
 async def get_notes(request: web.Request) -> web.Response:
     """
     description: Получить список заметок.
@@ -63,7 +67,7 @@ async def get_notes(request: web.Request) -> web.Response:
 
 
 @swagger_path('docs/get_note.yml')
-@routes.get('/api/notes/{note_id}')
+@routes.get('/api/notes/{note_id}', allow_head=False)
 async def get_note(request: web.Request) -> web.Response:
     storage: AbstractStorage = request.app['storage']
     key = request.match_info['note_id']
@@ -124,7 +128,17 @@ if __name__ == '__main__':
     settings = {
         'port': 8080,
         'data_storage': {
-            'storage': 'memory',
+            'storage': 'mongo',
+            'connection': {
+                # NOTE: подключаемся к контейнеру mongo в сети docker
+                'host': 'mongo',
+                'port': 27017,
+                # WARNING: данные для аутентификации пользователя лучше не хранить в коде
+                'user': 'user',
+                'password': 'password123',
+            },
+            'database': 'testdb',
+            'collection': 'notes',
         }
     }
 
@@ -138,4 +152,4 @@ if __name__ == '__main__':
 
     setup_swagger(app, title='Notes API')
 
-    web.run_app(app, host='localhost', port=settings['port'])
+    web.run_app(app, port=settings['port'])

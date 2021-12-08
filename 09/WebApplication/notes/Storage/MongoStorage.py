@@ -1,3 +1,4 @@
+import asyncio
 import uuid
 
 from typing import AsyncIterable, Optional
@@ -15,6 +16,7 @@ class MongoStorage(AbstractStorage):
 
     def create(self, connection: dict, database: str, collection: str):
         self.__client = AsyncIOMotorClient(self.__mongo_uri(**connection))
+        self.__client.get_io_loop = asyncio.get_running_loop
         self.__collection = self.__client[database][collection]
 
     async def get_all(self) -> AsyncIterable[Note]:
